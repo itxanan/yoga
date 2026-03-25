@@ -10,14 +10,21 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
     
     <link rel="stylesheet" href="style.css">
-    <script src="script.js" defer></script> 
+    <!-- <script src="script.js" defer></script> 下面是引入登入資料庫的 -->
+    <script type="module" src="script.js" defer></script>
 </head>
 <body>
 
-    <div id="landing-page">
+    <!-- <div id="landing-page">
         <h1 class="hero-title">AI Yoga Master</h1>
         <p class="hero-subtitle">你的專屬智能瑜伽教練<br>準備好體驗精準的姿勢偵測了嗎？</p>
         <button id="start-btn" class="start-btn">開始體驗</button>
+    </div> -->
+    <div id="landing-page">
+        <h1 class="hero-title">AI Yoga Master</h1>
+        <p id="user-welcome" class="hero-subtitle">歡迎使用智能瑜伽教練</p>
+        <button id="login-btn" class="start-btn">使用 Google 帳號登入</button>
+        <button id="start-btn" class="start-btn" style="display: none;">開始體驗</button>
     </div>
 
     <div id="main-app">

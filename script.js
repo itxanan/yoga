@@ -1,3 +1,30 @@
+// 🌟 1. 引入 Firebase SDK
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+// 🌟 2. 你的 Firebase 配置 (請替換成你在 Firebase 官網拿到的那段)
+const firebaseConfig = {
+    apiKey: "AIzaSyA3smEkfryuwXH9h-kIMHd18YLAz2NaM4I",
+    authDomain: "mygoodgoodproject.firebaseapp.com",
+    projectId: "mygoodgoodproject",
+    storageBucket: "mygoodgoodproject.firebasestorage.app",
+    messagingSenderId: "133466828365",
+    appId: "1:133466828365:web:67039e0aa2fd8012127604",
+    measurementId: "G-VP9YCD34SX"
+};
+
+  // Initialize Firebase
+  const app = initializeApp(firebaseConfig);
+  const analytics = getAnalytics(app);
+</script>
+
+// 初始化 Firebase
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+const provider = new GoogleAuthProvider();
+
 // ==========================================
 // 1. 取得 HTML 元素
 // ==========================================
@@ -18,17 +45,61 @@ const btnTree = document.getElementById('btn-tree');
 const btnSquat = document.getElementById('btn-squat');
 const startBtn = document.getElementById('start-btn');
 
+// 新增：Firebase 相關 UI 元素 (請確保 index.html 有對應 ID)
+const loginBtn = document.getElementById('login-btn'); 
+const userWelcome = document.getElementById('user-welcome');
+
 let currentPoseMode = 'tree'; 
+let currentUser = null; // 儲存當前使用者資訊
 
 // ==========================================
-// 2. 綁定按鈕事件 (取代原本 HTML 裡的 onclick)
+// 🌟 Firebase 身份驗證邏輯 (外掛功能)
+// ==========================================
+
+onAuthStateChanged(auth, (user) => {
+    if (user) {
+        currentUser = user;
+        if(loginBtn) loginBtn.style.display = 'none';
+        if(startBtn) startBtn.style.display = 'block';
+        if(userWelcome) userWelcome.innerText = `準備好了嗎，${user.displayName}？`;
+    } else {
+        currentUser = null;
+        if(loginBtn) loginBtn.style.display = 'block';
+        if(startBtn) startBtn.style.display = 'none';
+        if(userWelcome) userWelcome.innerText = "請先登入以記錄你的練習";
+    }
+});
+
+if(loginBtn) {
+    loginBtn.addEventListener('click', () => {
+        signInWithPopup(auth, provider).catch((err) => console.error("登入失敗", err));
+    });
+}
+
+// 🌟 新增：儲存數據到雲端的函式
+async function saveDailyRecord(poseType, status) {
+    if (!currentUser) return;
+    const today = new Date().toLocaleDateString('zh-TW').replace(/\//g, '-');
+    const userRef = doc(db, "users", currentUser.uid, "history", today);
+    try {
+        await setDoc(userRef, {
+            date: today,
+            lastPose: poseType,
+            status: status,
+            timestamp: new Date()
+        }, { merge: true });
+    } catch (e) { console.error("雲端存檔失敗", e); }
+}
+
+// ==========================================
+// 2. 綁定按鈕事件 (維持原樣)
 // ==========================================
 startBtn.addEventListener('click', startApp);
 btnTree.addEventListener('click', () => switchPose('tree'));
 btnSquat.addEventListener('click', () => switchPose('squat'));
 
 // ==========================================
-// 3. 核心功能函式
+// 3. 核心功能函式 (維持原樣)
 // ==========================================
 function calculateAngle(a, b, c) {
     let radians = Math.atan2(c.y - b.y, c.x - b.x) - Math.atan2(a.y - b.y, a.x - b.x);
@@ -65,12 +136,12 @@ function startApp() {
     setTimeout(() => {
         landingPage.style.display = 'none';
         mainApp.style.display = 'flex';
-        camera.start(); // 真正啟動相機
+        camera.start(); 
     }, 500);
 }
 
 // ==========================================
-// 4. AI 骨架偵測邏輯
+// 4. AI 骨架偵測邏輯 (完全保留你的判定，僅加上存檔觸發)
 // ==========================================
 function onResults(results) {
     if (loadingDiv.style.display !== 'none') {
@@ -123,6 +194,8 @@ function onResults(results) {
                         statusDisplay.classList.add('error'); statusDisplay.classList.remove('perfect');
                     } else {
                         statusDisplay.classList.remove('error'); statusDisplay.classList.add('perfect');
+                        // 🌟 這裡呼叫存檔：姿勢正確時自動儲存
+                        saveDailyRecord('tree', 'Perfect');
                     }
 
                 } else if (currentPoseMode === 'squat') {
@@ -147,6 +220,8 @@ function onResults(results) {
                         statusDisplay.classList.add('error'); statusDisplay.classList.remove('perfect');
                     } else if (squatColor === 'var(--success-color)') {
                         statusDisplay.classList.remove('error'); statusDisplay.classList.add('perfect');
+                        // 🌟 這裡呼叫存檔：姿勢正確時自動儲存
+                        saveDailyRecord('squat', 'Perfect');
                     } else {
                         statusDisplay.classList.remove('error', 'perfect');
                     }
@@ -158,7 +233,7 @@ function onResults(results) {
 }
 
 // ==========================================
-// 5. 初始化 MediaPipe 與相機
+// 5. 初始化 MediaPipe 與相機 (維持原樣)
 // ==========================================
 const pose = new Pose({locateFile: (file) => {
     return `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`;
