@@ -3,7 +3,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebas
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
-// 🌟 2. 你的 Firebase 配置 (請替換成你在 Firebase 官網拿到的那段)
+// 🌟 2. 你的 Firebase 配置
 const firebaseConfig = {
     apiKey: "AIzaSyA3smEkfryuwXH9h-kIMHd18YLAz2NaM4I",
     authDomain: "mygoodgoodproject.firebaseapp.com",
@@ -14,12 +14,7 @@ const firebaseConfig = {
     measurementId: "G-VP9YCD34SX"
 };
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-</script>
-
-// 初始化 Firebase
+// 初始化 Firebase (已移除重複與錯誤標籤)
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db = getFirestore(app);
@@ -44,16 +39,14 @@ const squatStatusDiv = document.getElementById('squat-status');
 const btnTree = document.getElementById('btn-tree');
 const btnSquat = document.getElementById('btn-squat');
 const startBtn = document.getElementById('start-btn');
-
-// 新增：Firebase 相關 UI 元素 (請確保 index.html 有對應 ID)
 const loginBtn = document.getElementById('login-btn'); 
 const userWelcome = document.getElementById('user-welcome');
 
 let currentPoseMode = 'tree'; 
-let currentUser = null; // 儲存當前使用者資訊
+let currentUser = null; 
 
 // ==========================================
-// 🌟 Firebase 身份驗證邏輯 (外掛功能)
+// 🌟 Firebase 身份驗證邏輯
 // ==========================================
 
 onAuthStateChanged(auth, (user) => {
@@ -76,7 +69,6 @@ if(loginBtn) {
     });
 }
 
-// 🌟 新增：儲存數據到雲端的函式
 async function saveDailyRecord(poseType, status) {
     if (!currentUser) return;
     const today = new Date().toLocaleDateString('zh-TW').replace(/\//g, '-');
@@ -92,14 +84,14 @@ async function saveDailyRecord(poseType, status) {
 }
 
 // ==========================================
-// 2. 綁定按鈕事件 (維持原樣)
+// 2. 綁定按鈕事件
 // ==========================================
 startBtn.addEventListener('click', startApp);
 btnTree.addEventListener('click', () => switchPose('tree'));
 btnSquat.addEventListener('click', () => switchPose('squat'));
 
 // ==========================================
-// 3. 核心功能函式 (維持原樣)
+// 3. 核心功能函式
 // ==========================================
 function calculateAngle(a, b, c) {
     let radians = Math.atan2(c.y - b.y, c.x - b.x) - Math.atan2(a.y - b.y, a.x - b.x);
@@ -130,9 +122,7 @@ function switchPose(poseName) {
 function startApp() {
     const landingPage = document.getElementById('landing-page');
     const mainApp = document.getElementById('main-app');
-
     landingPage.style.opacity = '0';
-    
     setTimeout(() => {
         landingPage.style.display = 'none';
         mainApp.style.display = 'flex';
@@ -141,7 +131,7 @@ function startApp() {
 }
 
 // ==========================================
-// 4. AI 骨架偵測邏輯 (完全保留你的判定，僅加上存檔觸發)
+// 4. AI 偵測邏輯
 // ==========================================
 function onResults(results) {
     if (loadingDiv.style.display !== 'none') {
@@ -194,7 +184,6 @@ function onResults(results) {
                         statusDisplay.classList.add('error'); statusDisplay.classList.remove('perfect');
                     } else {
                         statusDisplay.classList.remove('error'); statusDisplay.classList.add('perfect');
-                        // 🌟 這裡呼叫存檔：姿勢正確時自動儲存
                         saveDailyRecord('tree', 'Perfect');
                     }
 
@@ -220,7 +209,6 @@ function onResults(results) {
                         statusDisplay.classList.add('error'); statusDisplay.classList.remove('perfect');
                     } else if (squatColor === 'var(--success-color)') {
                         statusDisplay.classList.remove('error'); statusDisplay.classList.add('perfect');
-                        // 🌟 這裡呼叫存檔：姿勢正確時自動儲存
                         saveDailyRecord('squat', 'Perfect');
                     } else {
                         statusDisplay.classList.remove('error', 'perfect');
@@ -233,7 +221,7 @@ function onResults(results) {
 }
 
 // ==========================================
-// 5. 初始化 MediaPipe 與相機 (維持原樣)
+// 5. 初始化 MediaPipe 與相機
 // ==========================================
 const pose = new Pose({locateFile: (file) => {
     return `https://cdn.jsdelivr.net/npm/@mediapipe/pose/${file}`;
