@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>AI 瑜伽姿勢偵測</title>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+    <style>
+        body { display: flex; flex-direction: column; align-items: center; background-color: #222; color: white; font-family: sans-serif; margin-top: 20px; }
+        #status { font-size: 28px; font-weight: bold; margin-bottom: 15px; color: yellow; }
+        canvas { border: 4px solid #555; border-radius: 10px; transform: scaleX(-1); /* 讓鏡頭像照鏡子一樣左右相反 */ }
+        video { display: none; /* 隱藏原本的視訊畫面，我們只看畫布上的 AI 骨架 */ }
+    </style>
+</head>
+<body>
+    <div id="status">載入中...請稍候</div>
+    <video id="video" width="640" height="480" autoplay playsinline></video>
+    <canvas id="canvas" width="640" height="480"></canvas>
+
+    <script src="script.js"></script>
+</body>
+</html>
