@@ -11,90 +11,111 @@
     <style>
         /* CSS 美化區 */
         :root {
-            --primary-color: #00f2fe; /* 科技藍 */
-            --error-color: #ff4757;   /* 紅 */
-            --success-color: #2ed573; /* 綠 */
-            --bg-color: #1e272e;      /* 深灰色背景 */
-            --panel-color: #2f3542;   /* 控制面板顏色 */
+            --primary-color: #00f2fe; 
+            --secondary-color: #4facfe;
+            --error-color: #ff4757;   
+            --success-color: #2ed573; 
+            --bg-color: #1e272e;      
+            --panel-color: #2f3542;   
         }
 
         body {
-            margin: 0;
-            padding: 0;
+            margin: 0; padding: 0;
             background-color: var(--bg-color);
             color: white;
             font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            overflow: hidden; /* 防止頁面出現醜醜的捲軸 */
+        }
+
+        /* ================= 首頁區塊 ================= */
+        #landing-page {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100vh;
+            background: linear-gradient(135deg, #1e272e 0%, #2f3542 100%);
             display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100; /* 確保首頁蓋在最上層 */
+            transition: opacity 0.5s ease; /* 漸隱動畫 */
+        }
+
+        .hero-title {
+            font-size: 4rem;
+            margin: 0 0 10px 0;
+            background: -webkit-linear-gradient(45deg, var(--primary-color), var(--secondary-color));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            letter-spacing: 2px;
+        }
+
+        .hero-subtitle {
+            font-size: 1.2rem;
+            color: #a4b0be;
+            margin-bottom: 40px;
+            text-align: center;
+            line-height: 1.6;
+        }
+
+        .start-btn {
+            background: linear-gradient(45deg, var(--secondary-color), var(--primary-color));
+            border: none;
+            color: white;
+            padding: 15px 40px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 30px;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0, 242, 254, 0.3);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .start-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 25px rgba(0, 242, 254, 0.5);
+        }
+
+        /* ================= 偵測系統區塊 (預設隱藏) ================= */
+        #main-app {
+            display: none; /* 一開始先隱藏 */
             flex-direction: column;
             align-items: center;
             height: 100vh;
+            padding-top: 20px;
         }
 
-        h1 { margin-top: 20px; font-weight: 300; letter-spacing: 2px; }
+        /* 下面是你原本的樣式 */
+        h1 { margin-top: 0; font-weight: 300; letter-spacing: 2px; }
 
-        /* 上方控制面板 */
         #control-panel {
             background-color: var(--panel-color);
-            padding: 15px 30px;
-            border-radius: 50px;
-            margin: 20px 0;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
-            display: flex;
-            gap: 15px;
-            align-items: center;
+            padding: 15px 30px; border-radius: 50px;
+            margin: 10px 0 20px 0; box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            display: flex; gap: 15px; align-items: center;
         }
 
         .menu-btn {
-            background: none;
-            border: 2px solid #57606f;
-            color: #a4b0be;
-            padding: 10px 25px;
-            border-radius: 25px;
-            font-size: 16px;
-            cursor: pointer;
-            transition: all 0.3s ease;
+            background: none; border: 2px solid #57606f; color: #a4b0be;
+            padding: 10px 25px; border-radius: 25px; font-size: 16px;
+            cursor: pointer; transition: all 0.3s ease;
         }
 
         .menu-btn:hover { background-color: rgba(255,255,255,0.1); }
+        .menu-btn.active { border-color: var(--primary-color); color: var(--primary-color); box-shadow: 0 0 10px rgba(0,242,254,0.3); }
 
-        .menu-btn.active {
-            border-color: var(--primary-color);
-            color: var(--primary-color);
-            box-shadow: 0 0 10px rgba(0,242,254,0.3);
-        }
-
-        /* 視訊容器 */
         #video-container {
-            position: relative;
-            width: 640px;
-            height: 480px;
-            border-radius: 15px;
-            overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            position: relative; width: 640px; height: 480px;
+            border-radius: 15px; overflow: hidden; box-shadow: 0 10px 30px rgba(0,0,0,0.5);
         }
 
-        /* 隱藏視訊 */
         #video { display: none; }
+        #canvas { width: 100%; height: 100%; transform: scaleX(-1); }
 
-        /* 畫布 */
-        #canvas {
-            width: 100%;
-            height: 100%;
-            transform: scaleX(-1); /* 鏡像畫面，像照鏡子 */
-        }
-
-        /* 即時狀態文字浮動視窗 */
         #status-display {
-            position: absolute;
-            top: 20px;
-            left: 20px;
-            background-color: rgba(0,0,0,0.7);
-            padding: 15px;
-            border-radius: 8px;
-            width: 250px;
-            pointer-events: none; /* 讓滑鼠點不到文字，減少干擾 */
-            border-left: 4px solid #57606f;
-            transition: border-color 0.3s;
+            position: absolute; top: 20px; left: 20px;
+            background-color: rgba(0,0,0,0.7); padding: 15px;
+            border-radius: 8px; width: 250px; pointer-events: none;
+            border-left: 4px solid #57606f; transition: border-color 0.3s;
         }
 
         #status-display.perfect { border-color: var(--success-color); }
@@ -103,45 +124,48 @@
         .status-title { font-size: 14px; color: #a4b0be; margin-bottom: 5px; }
         .status-value { font-size: 18px; font-weight: bold; margin-bottom: 10px; }
         #pose-title { font-size: 20px; font-weight: bold; margin-bottom: 10px; color: var(--primary-color); }
-        .elbow-label, .shoulder-label, .leg-label { font-weight: normal; font-size: 16px; color: white; }
 
         #loading {
-            position: absolute;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background-color: rgba(0,0,0,0.8);
-            display: flex; justify-content: center; align-items: center;
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.8); display: flex; justify-content: center; align-items: center;
             font-size: 24px; color: white; z-index: 10;
         }
     </style>
 </head>
 <body>
-    <h1>AI Yoga Master</h1>
 
-    <div id="control-panel">
-        <span style="color: #a4b0be;">選擇動作：</span>
-        <button id="btn-tree" class="menu-btn active" onclick="switchPose('tree')">1: 大樹式</button>
-        <button id="btn-squat" class="menu-btn" onclick="switchPose('squat')">2: 深蹲</button>
+    <div id="landing-page">
+        <h1 class="hero-title">AI Yoga Master</h1>
+        <p class="hero-subtitle">你的專屬智能瑜伽教練<br>透過鏡頭即時分析姿勢，讓每一次伸展都精準到位。</p>
+        <button class="start-btn" onclick="startApp()">開始體驗</button>
     </div>
 
-    <div id="video-container">
-        <div id="loading">載入 MediaPipe 模型中...</div>
+    <div id="main-app">
+        <h1>AI Yoga Master</h1>
         
-        <video id="video" width="640" height="480" autoplay playsinline></video>
-        <canvas id="canvas" width="640" height="480"></canvas>
+        <div id="control-panel">
+            <span style="color: #a4b0be;">選擇動作：</span>
+            <button id="btn-tree" class="menu-btn active" onclick="switchPose('tree')">大樹式</button>
+            <button id="btn-squat" class="menu-btn" onclick="switchPose('squat')">深蹲</button>
+        </div>
 
-        <div id="status-display">
-            <div id="pose-title">大樹式侦測</div>
-            
-            <div id="tree-info">
-                <div class="status-title">手部狀態：</div>
-                <div id="arm-status" class="status-value arm-label">PERFECT</div>
-                <div class="status-title">腿部狀態：</div>
-                <div id="leg-status" class="status-value leg-label">LEG PERFECT</div>
-            </div>
+        <div id="video-container">
+            <div id="loading">啟動相機與 AI 模型中...</div>
+            <video id="video" width="640" height="480" autoplay playsinline></video>
+            <canvas id="canvas" width="640" height="480"></canvas>
 
-            <div id="squat-info" style="display: none;">
-                <div class="status-title">身體狀態：</div>
-                <div id="squat-status" class="status-value">請開始深蹲</div>
+            <div id="status-display">
+                <div id="pose-title">大樹式侦測</div>
+                <div id="tree-info">
+                    <div class="status-title">手部狀態：</div>
+                    <div id="arm-status" class="status-value">等待姿勢...</div>
+                    <div class="status-title">腿部狀態：</div>
+                    <div id="leg-status" class="status-value">等待姿勢...</div>
+                </div>
+                <div id="squat-info" style="display: none;">
+                    <div class="status-title">身體狀態：</div>
+                    <div id="squat-status" class="status-value">請開始深蹲</div>
+                </div>
             </div>
         </div>
     </div>
