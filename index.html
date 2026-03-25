@@ -2,22 +2,149 @@
 <html lang="zh-Hant">
 <head>
     <meta charset="UTF-8">
-    <title>AI 瑜伽姿勢偵測</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Yoga Master - 智能瑜伽教練</title>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
+    
     <style>
-        body { display: flex; flex-direction: column; align-items: center; background-color: #222; color: white; font-family: sans-serif; margin-top: 20px; }
-        #status { font-size: 28px; font-weight: bold; margin-bottom: 15px; color: yellow; }
-        canvas { border: 4px solid #555; border-radius: 10px; transform: scaleX(-1); /* 讓鏡頭像照鏡子一樣左右相反 */ }
-        video { display: none; /* 隱藏原本的視訊畫面，我們只看畫布上的 AI 骨架 */ }
+        /* CSS 美化區 */
+        :root {
+            --primary-color: #00f2fe; /* 科技藍 */
+            --error-color: #ff4757;   /* 紅 */
+            --success-color: #2ed573; /* 綠 */
+            --bg-color: #1e272e;      /* 深灰色背景 */
+            --panel-color: #2f3542;   /* 控制面板顏色 */
+        }
+
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: var(--bg-color);
+            color: white;
+            font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            height: 100vh;
+        }
+
+        h1 { margin-top: 20px; font-weight: 300; letter-spacing: 2px; }
+
+        /* 上方控制面板 */
+        #control-panel {
+            background-color: var(--panel-color);
+            padding: 15px 30px;
+            border-radius: 50px;
+            margin: 20px 0;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .menu-btn {
+            background: none;
+            border: 2px solid #57606f;
+            color: #a4b0be;
+            padding: 10px 25px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .menu-btn:hover { background-color: rgba(255,255,255,0.1); }
+
+        .menu-btn.active {
+            border-color: var(--primary-color);
+            color: var(--primary-color);
+            box-shadow: 0 0 10px rgba(0,242,254,0.3);
+        }
+
+        /* 視訊容器 */
+        #video-container {
+            position: relative;
+            width: 640px;
+            height: 480px;
+            border-radius: 15px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+
+        /* 隱藏視訊 */
+        #video { display: none; }
+
+        /* 畫布 */
+        #canvas {
+            width: 100%;
+            height: 100%;
+            transform: scaleX(-1); /* 鏡像畫面，像照鏡子 */
+        }
+
+        /* 即時狀態文字浮動視窗 */
+        #status-display {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            background-color: rgba(0,0,0,0.7);
+            padding: 15px;
+            border-radius: 8px;
+            width: 250px;
+            pointer-events: none; /* 讓滑鼠點不到文字，減少干擾 */
+            border-left: 4px solid #57606f;
+            transition: border-color 0.3s;
+        }
+
+        #status-display.perfect { border-color: var(--success-color); }
+        #status-display.error { border-color: var(--error-color); }
+
+        .status-title { font-size: 14px; color: #a4b0be; margin-bottom: 5px; }
+        .status-value { font-size: 18px; font-weight: bold; margin-bottom: 10px; }
+        #pose-title { font-size: 20px; font-weight: bold; margin-bottom: 10px; color: var(--primary-color); }
+        .elbow-label, .shoulder-label, .leg-label { font-weight: normal; font-size: 16px; color: white; }
+
+        #loading {
+            position: absolute;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.8);
+            display: flex; justify-content: center; align-items: center;
+            font-size: 24px; color: white; z-index: 10;
+        }
     </style>
 </head>
 <body>
-    <div id="status">載入中...請稍候</div>
-    <video id="video" width="640" height="480" autoplay playsinline></video>
-    <canvas id="canvas" width="640" height="480"></canvas>
+    <h1>AI Yoga Master</h1>
+
+    <div id="control-panel">
+        <span style="color: #a4b0be;">選擇動作：</span>
+        <button id="btn-tree" class="menu-btn active" onclick="switchPose('tree')">1: 大樹式</button>
+        <button id="btn-squat" class="menu-btn" onclick="switchPose('squat')">2: 深蹲</button>
+    </div>
+
+    <div id="video-container">
+        <div id="loading">載入 MediaPipe 模型中...</div>
+        
+        <video id="video" width="640" height="480" autoplay playsinline></video>
+        <canvas id="canvas" width="640" height="480"></canvas>
+
+        <div id="status-display">
+            <div id="pose-title">大樹式侦測</div>
+            
+            <div id="tree-info">
+                <div class="status-title">手部狀態：</div>
+                <div id="arm-status" class="status-value arm-label">PERFECT</div>
+                <div class="status-title">腿部狀態：</div>
+                <div id="leg-status" class="status-value leg-label">LEG PERFECT</div>
+            </div>
+
+            <div id="squat-info" style="display: none;">
+                <div class="status-title">身體狀態：</div>
+                <div id="squat-status" class="status-value">請開始深蹲</div>
+            </div>
+        </div>
+    </div>
 
     <script src="script.js"></script>
 </body>
