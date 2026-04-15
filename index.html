@@ -9,17 +9,13 @@
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/pose/pose.js" crossorigin="anonymous"></script>
     
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
     <link rel="stylesheet" href="style.css">
-    <!-- <script src="script.js" defer></script> 下面是引入登入資料庫的 -->
     <script type="module" src="script.js" ></script>
 </head>
 <body>
 
-    <!-- <div id="landing-page">
-        <h1 class="hero-title">AI Yoga Master</h1>
-        <p class="hero-subtitle">你的專屬智能瑜伽教練<br>準備好體驗精準的姿勢偵測了嗎？</p>
-        <button id="start-btn" class="start-btn">開始體驗</button>
-    </div> -->
     <div id="landing-page">
         <h1 class="hero-title">AI Yoga Master</h1>
         <p id="user-welcome" class="hero-subtitle">歡迎使用智能瑜伽教練</p>
@@ -54,6 +50,17 @@
                     <div id="squat-status" class="status-value">請開始深蹲</div>
                 </div>
             </div>
+        </div>
+
+        <div id="history-container" style="background: rgba(255,255,255,0.9); padding: 20px; border-radius: 15px; margin-top: 20px; width: 640px; color: #333;">
+            <h2 style="text-align: center; margin-bottom: 15px;">📊 我的練習進度 (最近 7 次)</h2>
+            
+            <canvas id="historyChart"></canvas>
+
+            <h3 style="margin-top: 20px; border-top: 1px solid #ddd; padding-top: 15px;">📜 歷史明細</h3>
+            <ul id="history-list" style="list-style: none; padding: 0; max-height: 200px; overflow-y: auto;">
+                <li style="color: #999;">尚無練習紀錄...</li>
+            </ul>
         </div>
     </div>
 
