@@ -52,16 +52,19 @@
             </div>
         </div>
 
-        <div id="history-container" style="background: rgba(255,255,255,0.9); padding: 20px; border-radius: 15px; margin-top: 20px; width: 640px; color: #333;">
-            <h2 style="text-align: center; margin-bottom: 15px;">📊 我的練習進度 (最近 7 次)</h2>
-            
-            <canvas id="historyChart"></canvas>
+        <div id="history-controls" style="margin-top: 20px; text-align: center;">
+            <button id="toggle-history-btn" class="menu-btn" style="background-color: #747d8c;">查看歷史紀錄</button>
+        </div>
 
+        <div id="history-container" style="display: none; background: rgba(255,255,255,0.9); padding: 20px; border-radius: 15px; margin-top: 20px; width: 640px; color: #333;">
+            <h2 style="text-align: center; margin-bottom: 15px;">📊 我的練習進度 (最近 7 次)</h2>
+            <canvas id="historyChart"></canvas>
             <h3 style="margin-top: 20px; border-top: 1px solid #ddd; padding-top: 15px;">📜 歷史明細</h3>
             <ul id="history-list" style="list-style: none; padding: 0; max-height: 200px; overflow-y: auto;">
-                <li style="color: #999;">尚無練習紀錄...</li>
+                <li style="color: #999;">載入中...</li>
             </ul>
         </div>
+        
     </div>
 
 </body>

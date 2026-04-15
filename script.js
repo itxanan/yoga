@@ -55,7 +55,6 @@ onAuthStateChanged(auth, (user) => {
         if(loginBtn) loginBtn.style.display = 'none';
         if(startBtn) startBtn.style.display = 'block';
         if(userWelcome) userWelcome.innerText = `準備好了嗎，${user.displayName}？`;
-        loadHistoryData(); // <--- 新增這行
     } else {
         currentUser = null;
         if(loginBtn) loginBtn.style.display = 'block';
@@ -88,6 +87,36 @@ async function saveDailyRecord(poseType, status) {
 // ==========================================
 // 加入傳到前端
 // ==========================================
+
+// ==========================================
+// 🌟 歷史紀錄開關邏輯
+// ==========================================
+const toggleHistoryBtn = document.getElementById('toggle-history-btn');
+const historyContainer = document.getElementById('history-container');
+
+let isHistoryVisible = false; // 紀錄目前是開還是關
+
+toggleHistoryBtn.addEventListener('click', () => {
+    isHistoryVisible = !isHistoryVisible; // 切換狀態
+
+    if (isHistoryVisible) {
+        // 顯示
+        historyContainer.style.display = 'block';
+        toggleHistoryBtn.innerText = '關閉紀錄';
+        toggleHistoryBtn.style.backgroundColor = '#ff4757'; // 變成紅色方便關閉
+        
+        // 💡 顯示時才去抓最新資料，省資源
+        loadHistoryData(); 
+        
+        // 讓網頁自動捲動到紀錄區塊，使用者才看得到
+        historyContainer.scrollIntoView({ behavior: 'smooth' });
+    } else {
+        // 隱藏
+        historyContainer.style.display = 'none';
+        toggleHistoryBtn.innerText = '查看歷史紀錄';
+        toggleHistoryBtn.style.backgroundColor = '#747d8c'; // 變回灰色
+    }
+});
 
 let myChart = null; // 用來存放圖表實例
 
@@ -148,6 +177,7 @@ function renderHistoryChart(labels, dataPoints) {
         }
     });
 }
+// 到這 
 
 // ==========================================
 // 2. 綁定按鈕事件
