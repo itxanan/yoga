@@ -1,7 +1,7 @@
 // 🌟 1. 引入 Firebase SDK
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
 import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-import { getFirestore, doc, setDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+import { getFirestore, doc, setDoc, collection, query, orderBy, limit, getDocs } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
 // 🌟 2. 你的 Firebase 配置
 const firebaseConfig = {
@@ -55,6 +55,7 @@ onAuthStateChanged(auth, (user) => {
         if(loginBtn) loginBtn.style.display = 'none';
         if(startBtn) startBtn.style.display = 'block';
         if(userWelcome) userWelcome.innerText = `準備好了嗎，${user.displayName}？`;
+        loadHistoryData(); // <--- 新增這行
     } else {
         currentUser = null;
         if(loginBtn) loginBtn.style.display = 'block';
@@ -80,7 +81,72 @@ async function saveDailyRecord(poseType, status) {
             status: status,
             timestamp: new Date()
         }, { merge: true });
+        loadHistoryData(); // <--- 存完後立刻重新讀取並更新圖表
     } catch (e) { console.error("雲端存檔失敗", e); }
+}
+
+// ==========================================
+// 加入傳到前端
+// ==========================================
+
+let myChart = null; // 用來存放圖表實例
+
+async function loadHistoryData() {
+    if (!currentUser) return;
+
+    // 指向你存檔的路徑：users/{uid}/history
+    const historyRef = collection(db, "users", currentUser.uid, "history");
+    const q = query(historyRef, orderBy("timestamp", "desc"), limit(7));
+
+    try {
+        const querySnapshot = await getDocs(q);
+        const dates = [];
+        const scores = [];
+        const listItems = [];
+
+        querySnapshot.forEach((doc) => {
+            const data = doc.data();
+            dates.push(data.date);
+            // 暫時將 Perfect 定義為 100 分，你之後可以改成實際計算的角度分數
+            scores.push(data.status === 'Perfect' ? 100 : 50);
+            listItems.push(`<li style="padding: 5px 0; border-bottom: 1px solid #eee;">📅 ${data.date} - ${data.lastPose}: <strong>${data.status}</strong></li>`);
+        });
+
+        // 繪製圖表 (資料反轉讓時間從左到右)
+        renderHistoryChart(dates.reverse(), scores.reverse());
+        
+        // 更新文字列表
+        const listContainer = document.getElementById('history-list');
+        if(listItems.length > 0) {
+            listContainer.innerHTML = listItems.join('');
+        }
+    } catch (e) {
+        console.error("讀取紀錄失敗", e);
+    }
+}
+
+function renderHistoryChart(labels, dataPoints) {
+    const ctx = document.getElementById('historyChart').getContext('2d');
+    
+    if (myChart) { myChart.destroy(); } // 如果已經有圖表，先清除
+
+    myChart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: '練習品質 (100=完美)',
+                data: dataPoints,
+                borderColor: '#4e73df',
+                backgroundColor: 'rgba(78, 115, 223, 0.1)',
+                tension: 0.3,
+                fill: true
+            }]
+        },
+        options: {
+            scales: { y: { min: 0, max: 100 } }
+        }
+    });
 }
 
 // ==========================================
